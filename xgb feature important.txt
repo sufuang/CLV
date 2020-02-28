@@ -1,0 +1,30 @@
+
+
+lm.sp = lm.coef_.shape
+cof=pd.DataFrame(lm.coef_reshape(lm_sp[1]. lm_sp[0]),x.columns, columns=['Coefficient'])
+
+xgb = ltv_xgb_model
+xgb.sp = ltv_xgb_model.feature_importances_.shape
+imp = pd.DataFrame(xgb.feature_importances_reshape(xgb_sp[1]. xgb_sp[0]),tx_user.columns, columns=['Importances'])
+
+
+def get_xgb_imp(xgb, feat_names):
+    from numpy import array
+    imp_vals = xgb.booster().get_fscore()
+    imp_dict = {feat_names[i]:float(imp_vals.get('f'+str(i),0.)) for i in range(len(feat_names))}
+    total = array(imp_dict.values()).sum()
+    return {k:v/total for k,v in imp_dict.items()}
+
+
+>>> import numpy as np
+>>> from xgboost import XGBClassifier
+>>> 
+>>> feat_names = ['var1','var2','var3','var4','var5']
+>>> np.random.seed(1)
+>>> X = np.random.rand(100,5)
+>>> y = np.random.rand(100).round()
+>>> xgb = XGBClassifier(n_estimators=10)
+>>> xgb = xgb.fit(X,y)
+>>> 
+>>> get_xgb_imp(xgb,feat_names)
+{'var5': 0.0, 'var4': 0.20408163265306123, 'var1': 0.34693877551020408, 'var3': 0.22448979591836735, 'var2': 0.22448979591836735}
