@@ -1,0 +1,103 @@
+1).
+create table temp_tables.clv_txn_jansep19 as
+ (sel hh_sk,   txn_dt,  adj_gp_amt from  dw_bi_vw.F_POS_TXN_DTL  
+ where hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30' and STR_FAC_NBR  in (240, 991, 1510) )  with data
+
+2).
+
+create table temp_tables.sbd_gro_hhsk as
+(sel m3.hh_sk from
+       ( sel  hh_sk  
+         from dw_bi_vw.F_POS_TXN_DTL where STR_FAC_NBR  = 0025 and WGT_PROD_IND = 0 
+         and prod_sk > 0 and hh_sk > 0   and unit_qty > 0 
+         and txn_dt    between '2019-08-01' and  '2019-08-31'
+         and prod_sk in  ( sel prod_sk from dw_bi_vw.dim_2_prod where  corp_dept_nbr  = 307 or (corp_dept_nbr = 301  and grp_id <> 32) )
+		  group by hh_sk having count(*) > 3 
+         ) as m3
+
+create table temp_tables.clv_txn_jansep19_y as
+ (sel hh_sk,   txn_dt,  adj_gp_amt from  dw_bi_vw.F_POS_TXN_DTL  
+ where hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30' and STR_FAC_NBR  not in (240, 991, 1510)
+and hh_sk in ( sel hh_sk from temp_tables.clv_txn_jansep19_x group by hh_sk)
+
+
+ )  with data
+
+create table temp_tables.clv_txn_jansep19 as
+(sel * from temp_tables.clv_txn_jansep19_x
+union 
+sel  * from temp_tables.clv_txn_jansep19_y)
+
+
+
+create table temp_tables.clv_txn_jansep19_y as
+ (sel hh_sk,   txn_dt,  adj_gp_amt from  dw_bi_vw.F_POS_TXN_DTL  dtl
+  inner join (
+ sel hh_sk from  temp_tables.clv_txn_jansep19_x
+     group by hh_sk) as clv
+ on dtl.hh_sk = clv.hh_sk 
+ where dtl.hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30' and STR_FAC_NBR  not in (240, 991, 1510)
+
+
+and hh_sk in ( sel hh_sk from temp_tables.clv_txn_jansep19_x group by hh_sk)
+
+
+ )  with data
+
+
+
+
+3).
+create table temp_tables.clv_txn_jansep19_1 as
+ (sel hh_sk,   txn_dt,  adj_gp_amt from  dw_bi_vw.F_POS_TXN_DTL  
+ where hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30' and STR_FAC_NBR  not in (240, 991, 1510) )  with data
+
+11-10-19
+1). count for  temp_tables.clv_txn_jansep19_hhsk is 121,737
+
+Count for temp_tables.clv_txn_jansep19_strfac_x = 2177 
+create table temp_tables.clv_txn_jansep19_strfac_x as
+ (sel STR_FAC_NBR   from  temp_tables.clv_txn_jansep19_hhsk  clv
+  inner join  dw_bi_vw.F_POS_TXN_DTL  dtl
+  on dtl.hh_sk = clv.hh_sk 
+ where dtl.hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30'
+ and    STR_FAC_NBR  not in (240, 991, 1510)
+  group by STR_FAC_NBR    ) with data
+
+2). 
+create table temp_tables.clv_txn_jansep19_y as
+ (sel dtl.hh_sk,   dtl.txn_dt,  dtl.adj_gp_amt,   STR_FAC_NBR from  temp_tables.clv_txn_jansep19_hhsk  clv
+  inner join  dw_bi_vw.F_POS_TXN_DTL  dtl
+  on dtl.hh_sk = clv.hh_sk 
+ where dtl.hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30' and 
+          STR_FAC_NBR   in ( sel     STR_FAC_NBR  from temp_tables.clv_txn_jansep19_strfac_x) ) wit
+h data
+4).
+
+
+I'm sorry, the dataset "Pima Indians Diabetes" does not appear to exist.
+
+
+A note from the donor regarding Pima Indians Diabetes data:
+"Thank you for your interest in the Pima Indians Diabetes dataset. The dataset is no longer available due to permission restrictions."
+
+11-11-19
+create table temp_tables.clv_txn_jansep19_y as
+ (sel dtl.hh_sk,   dtl.txn_dt,  dtl.adj_gp_amt,   STR_FAC_NBR  from  temp_tables.clv_txn_jansep19_hhsk  clv
+  inner join  dw_bi_vw.F_POS_TXN_DTL  dtl
+  on dtl.hh_sk = clv.hh_sk 
+ where dtl.hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30'
+ and    STR_FAC_NBR  not in (240, 991, 1510)
+  ) with data
+
+count = 2177
+create table temp_tables.clv_txn_jansep19_strfac_y as
+ (sel STR_FAC_NBR   from  temp_tables.clv_txn_jansep19_hhsk  clv
+  inner join  dw_bi_vw.F_POS_TXN_DTL  dtl
+  on dtl.hh_sk = clv.hh_sk 
+ and  dtl.hh_sk > 0 and prod_sk > 0 and txn_dt between '2019-01-01' and '2019-09-30'
+ and    STR_FAC_NBR  not in (240, 991, 1510)
+  group by STR_FAC_NBR    ) with data
+
+
+sel hh_sk from 
