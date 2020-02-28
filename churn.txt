@@ -1,0 +1,128 @@
+
+12-08-19
+create table temp_tables.chn_txn_0419_1019_all_x as (
+SELECT
+ hh_sk,    txn_dt, ext_prc_amt 
+FROM dw_bi_vw.F_POS_TXN_DTL
+where txn_dt between  '2019-04-01' and  '2019-10-30' 
+  and prod_sk > 0 and hh_sk > 0 and  hh_sk < 692821) with data
+
+xx-xx-xx
+
+value_counts()
+df_ggf_y =  df_ggf.to_frame() 
+df_ggf_y.reset_index( level = 0, inplace = True)  # index will become a column
+df_ggf_y.head()
+df_ggf_y.info()
+
+kmeans = KMeans(n_clusters=3)
+kmeans.fit(df_ggf_y[['clv']])
+df_ggf_y['CLVCluster'] = kmeans.predict(df_ggf_y[['clv']])
+df_ggf_z = cf_order_cluster('CLVCluster', 'clv',df_ggf_y,True)
+
+
+
+SELECT
+  customer_id,
+  COUNT(distinct date(transaction_at)) - 1 as frequency,
+  datediff('day', MIN(transaction_at), MAX(transaction_at)) as recency,
+  AVG(total_price) as monetary_value,
+  datediff('day', CURRENT_DATE, MIN(transaction_at)) as T
+FROM orders
+GROUP BY customer_id
+
+
+create table temp_tables.chn_txn_0419_1019_sumy as (
+SELECT
+ hh_sk,
+  COUNT(distinct txn_dt) - 1 as frequency, 
+  MAX(txn_dt ) -  MIN(txn_dt) as recency,
+    AVG(EXT_PRC_AMT) as monetary_value,
+   cast('2019-10-30' as date)  -  MIN(txn_dt) as T
+   FROM dw_bi_vw.F_POS_TXN_DTL
+where txn_dt between  '2019-04-01' and  '2019-10-30' 
+  and prod_sk > 0 and hh_sk > 0
+GROUP BY hh_sk ) with data
+
+
+sel count(*) from temp_tables.chn_txn_0419_1019                      #30,547,457
+sel count(*) from temp_tables.chn_txn_0419_1019 where frequency = 0  # 5,336,213
+5,336,213/30,547,457 = 0.1647  (16% of hh_sk shopping once only) 
+sel count(*) from temp_tables.chn_txn_0419_1019 where recency = 0    # 5,336,213
+sel count(*) from temp_tables.chn_txn_0419_1019 where frequency = 0  and  recency = 0  # 5,336,213
+sel count(*) from  temp_tables.chn_txn_0419_1019  where monetary_value < 0 # 77430
+sel count(*) from  temp_tables.chn_txn_0419_1019  where monetary_value = 0 # 18255
+
+rename table temp_tables.chn_txn_0419_1019 to temp_tables.chn_txn_0419_1019_all  (not exclude frequency = 0)
+
+sel median (hh_sk) from   temp_tables.chn_txn_0419_1019 where frequency > 0 sel median (hh_sk) from   temp_tables.chn_txn_0419_1019 where frequency > 0 
+  # 30,675,906
+
+sel count(*)   from  temp_tables.chn_txn_0419_1019_sumy where frequency > 0  # 25,211,251
+
+
+sel median (hh_sk) from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk < 30675906 
+$# 14881620
+sel median (hh_sk) from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk < 30675906 
+
+create table temp_tables.chn_txn_0419_1019 as (select * from temp_tables.chn_txn_0419_1019_all where frequency >  0 )
+
+6,302,813
+sel median (hh_sk) from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk > 30675906 
+# 64065711
+
+sel median (hh_sk) from temp_tables.chn_txn_0419_1019_sumy_1   # 7475845
+sel median (hh_sk) from temp_tables.chn_txn_0419_1019_sumy_1  where hh_sk < 7475845   # 3720250
+sel count(*) from temp_tables.chn_txn_0419_1019_sumy_1  where hh_sk < 3720250  # 1575703
+sel median (hh_sk) from temp_tables.chn_txn_0419_1019_sumy_1  where hh_sk < 3720250  # 1572825
+
+sel median (hh_sk) from temp_tables.chn_txn_0419_1019_sumy_1  where hh_sk <  1572825  # 692821
+sel count(*)  from temp_tables.chn_txn_0419_1019_sumy_1  where hh_sk <  692821  # 393925
+
+
+
+create table   temp_tables.chn_txn_0419_1019_1 as (
+sel *  from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk < 14881620) with data
+
+6,302,812
+create table   temp_tables.chn_txn_0419_1019_2 as (
+sel *  from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk between 14881620 and 30675905 ) with data
+
+6,302,813
+create table   temp_tables.chn_txn_0419_1019_3 as (
+sel *  from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk between 30675906  and 64065711 ) with data
+6,302,813
+create table   temp_tables.chn_txn_0419_1019_4 as (
+sel *  from   temp_tables.chn_txn_0419_1019 where frequency > 0  and hh_sk > 64065711 ) with data
+
+
+
+create table temp_tables.chn_txn_0419_1019_all_1 as (
+SELECT
+ hh_sk,    txn_dt. ext_prc_amt 
+FROM dw_bi_vw.F_POS_TXN_DTL
+where txn_dt between  '2019-04-01' and  '2019-10-30' 
+  and prod_sk > 0 and hh_sk > 0 and  hh_sk < 14881620 ) with data
+
+
+sel  '2019-10-30' -  MIN(txn_dt) as T   from temp_tables.chn_txn_0419_1019_all_1  where hh_sk = 17 
+
+Load 
+summary = summary_data_from_transaction_data(transaction_data,'hh_sk','txn_dt',monetary_value_col='monetary_value',
+                                             observation_period_end='2019-10-30')
+
+
+sel count(*) from temp_tables.chn_txn_0419_1019_all_x  # 67,659,113
+
+
+hh_sk < 341410  
+        692821 67,659,113 
+        341410 35,192,295
+        120705 12,783,713
+         60352  6,523,300  *  39159 unique  hh_sk
+
+
+
+
+
+
